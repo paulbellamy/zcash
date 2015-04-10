@@ -200,11 +200,7 @@ void Shutdown()
         pwalletMain->Flush(false);
 #endif
 #ifdef ENABLE_MINING
- #ifdef ENABLE_WALLET
-    GenerateBitcoins(false, NULL, 0);
- #else
-    GenerateBitcoins(false, 0);
- #endif
+    GenerateBitcoins(false, 0, Params());
 #endif
     StopNode();
     StopTorControl();
@@ -1650,7 +1646,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
  #ifdef ENABLE_WALLET
         bool minerAddressInLocalWallet = false;
         if (pwalletMain) {
-            // Address has alreday been validated
+            // Address has already been validated
             CBitcoinAddress addr(mapArgs["-mineraddress"]);
             CKeyID keyID;
             addr.GetKeyID(keyID);
@@ -1660,6 +1656,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             return InitError(_("-mineraddress is not in the local wallet. Either use a local address, or set -minetolocalwallet=0"));
         }
  #endif // ENABLE_WALLET
+
+        GetMainSignals().ScriptForMining.connect(GetScriptForMinerAddress);
     }
 #endif // ENABLE_MINING
 
@@ -1730,12 +1728,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
 #ifdef ENABLE_MINING
     // Generate coins in the background
- #ifdef ENABLE_WALLET
-    if (pwalletMain || !GetArg("-mineraddress", "").empty())
-        GenerateBitcoins(GetBoolArg("-gen", false), pwalletMain, GetArg("-genproclimit", 1));
- #else
-    GenerateBitcoins(GetBoolArg("-gen", false), GetArg("-genproclimit", 1));
- #endif
+    GenerateBitcoins(GetBoolArg("-gen", false), GetArg("-genproclimit", 1), Params());
 #endif
 
     // ********************************************************* Step 11: finished
