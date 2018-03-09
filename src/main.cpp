@@ -2272,7 +2272,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     }
 
     // Grab the consensus branch ID for the block's height
-    auto consensusBranchId = CurrentEpochBranchId(pindex->nHeight, Params().GetConsensus());
+    auto consensusBranchId = CurrentEpochBranchId(pindex->nHeight, chainparams.GetConsensus());
 
     std::vector<PrecomputedTransactionData> txdata;
     txdata.reserve(block.vtx.size()); // Required so that pointers to individual PrecomputedTransactionData don't get invalidated
@@ -2379,7 +2379,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         // Move this if BLOCK_VALID_CONSENSUS is ever altered.
         static_assert(BLOCK_VALID_CONSENSUS == BLOCK_VALID_SCRIPTS,
             "nCachedBranchId must be set after all consensus rules have been validated.");
-        if (IsActivationHeightForAnyUpgrade(pindex->nHeight, Params().GetConsensus())) {
+        if (IsActivationHeightForAnyUpgrade(pindex->nHeight, chainparams.GetConsensus())) {
             pindex->nStatus |= BLOCK_ACTIVATES_UPGRADE;
             pindex->nCachedBranchId = CurrentEpochBranchId(pindex->nHeight, chainparams.GetConsensus());
         } else if (pindex->pprev) {
@@ -2869,7 +2869,7 @@ static bool ActivateBestChainStep(CValidationState& state, const CChainParams& c
         mempool.removeForReorg(pcoinsTip, chainActive.Tip()->nHeight + 1, STANDARD_LOCKTIME_VERIFY_FLAGS);
     }
     mempool.removeWithoutBranchId(
-        CurrentEpochBranchId(chainActive.Tip()->nHeight + 1, Params().GetConsensus()));
+        CurrentEpochBranchId(chainActive.Tip()->nHeight + 1, chainparams.GetConsensus()));
     mempool.check(pcoinsTip);
 
     // Callbacks/notifications for a new best chain.
