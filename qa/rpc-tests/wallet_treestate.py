@@ -6,7 +6,8 @@
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, initialize_chain_clean, \
-    start_nodes, connect_nodes_bi, wait_and_assert_operationid_status
+    start_nodes, connect_nodes_bi, wait_and_assert_operationid_status, \
+    get_coinbase_address
 
 import time
 from decimal import Decimal
@@ -34,7 +35,7 @@ class WalletTreeStateTest (BitcoinTestFramework):
         self.nodes[1].generate(101)
         self.sync_all()
 
-        mytaddr = self.nodes[0].getnewaddress()     # where coins were mined
+        mytaddr = get_coinbase_address(self.nodes[0], 100)
         myzaddr = self.nodes[0].z_getnewaddress()
 
         # Spend coinbase utxos to create three notes of 9.99990000 each
