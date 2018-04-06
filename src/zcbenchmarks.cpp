@@ -42,7 +42,7 @@ void pre_wallet_load()
     if (pwalletMain)
         pwalletMain->Flush(false);
 #ifdef ENABLE_MINING
-    GenerateBitcoins(false, NULL, 0);
+    GenerateBitcoins(false, 0, Params());
 #endif
     UnregisterNodeSignals(GetNodeSignals());
     if (pwalletMain)
@@ -61,7 +61,7 @@ void post_wallet_load(){
 #ifdef ENABLE_MINING
     // Generate coins in the background
     if (pwalletMain || !GetArg("-mineraddress", "").empty())
-        GenerateBitcoins(GetBoolArg("-gen", false), pwalletMain, GetArg("-genproclimit", 1));
+        GenerateBitcoins(GetBoolArg("-gen", false), GetArg("-genproclimit", 1), Params());
 #endif    
 }
 
@@ -169,8 +169,9 @@ double benchmark_solve_equihash()
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << I;
 
-    unsigned int n = Params(CBaseChainParams::MAIN).EquihashN();
-    unsigned int k = Params(CBaseChainParams::MAIN).EquihashK();
+    auto params = Params(CBaseChainParams::MAIN).GetConsensus();
+    unsigned int n = params.nEquihashN;
+    unsigned int k = params.nEquihashK;
     crypto_generichash_blake2b_state eh_state;
     EhInitialiseState(n, k, eh_state);
     crypto_generichash_blake2b_update(&eh_state, (unsigned char*)&ss[0], ss.size());
@@ -214,11 +215,11 @@ std::vector<double> benchmark_solve_equihash_threaded(int nThreads)
 double benchmark_verify_equihash()
 {
     CChainParams params = Params(CBaseChainParams::MAIN);
-    CBlock genesis = Params(CBaseChainParams::MAIN).GenesisBlock();
+    CBlock genesis = params.GenesisBlock();
     CBlockHeader genesis_header = genesis.GetBlockHeader();
     struct timeval tv_start;
     timer_start(tv_start);
-    CheckEquihashSolution(&genesis_header, params);
+    CheckEquihashSolution(&genesis_header, params.GetConsensus());
     return timer_stop(tv_start);
 }
 
@@ -419,7 +420,7 @@ double benchmark_connectblock_slow()
     CValidationState state;
     struct timeval tv_start;
     timer_start(tv_start);
-    assert(ConnectBlock(block, state, &index, view, true));
+    assert(ConnectBlock(block, state, &index, view, Params(), true));
     auto duration = timer_stop(tv_start);
 
     // Undo alterations to global state

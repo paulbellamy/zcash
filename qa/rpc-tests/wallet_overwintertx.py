@@ -5,7 +5,8 @@
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, initialize_chain_clean, \
-    start_nodes, connect_nodes_bi, wait_and_assert_operationid_status
+    start_nodes, connect_nodes_bi, wait_and_assert_operationid_status, \
+    get_coinbase_address
 
 from decimal import Decimal
 
@@ -31,7 +32,7 @@ class WalletOverwinterTxTest (BitcoinTestFramework):
         self.sync_all()
         # Node 0 has reward from blocks 1 to 98 which are spendable.
 
-        taddr0 = self.nodes[0].getnewaddress()
+        taddr0 = get_coinbase_address(self.nodes[0], 98)
         taddr1 = self.nodes[1].getnewaddress()
         taddr2 = self.nodes[2].getnewaddress()
         zaddr2 = self.nodes[2].z_getnewaddress()

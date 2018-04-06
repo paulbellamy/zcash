@@ -5,7 +5,8 @@
 
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal, initialize_chain_clean, \
-    start_node, connect_nodes, wait_and_assert_operationid_status
+    start_node, connect_nodes, wait_and_assert_operationid_status, \
+    get_coinbase_address
 
 from decimal import Decimal
 
@@ -37,7 +38,7 @@ class MempoolUpgradeActivationTest(BitcoinTestFramework):
         self.sync_all()
 
         # Shield some ZEC
-        node1_taddr = self.nodes[1].getnewaddress()
+        node1_taddr = get_coinbase_address(self.nodes[1], 97)
         node0_zaddr = self.nodes[0].z_getnewaddress()
         recipients = [{'address': node0_zaddr, 'amount': Decimal('10')}]
         myopid = self.nodes[1].z_sendmany(node1_taddr, recipients, 1, Decimal('0'))
